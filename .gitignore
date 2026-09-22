@@ -1,0 +1,19 @@
+# Variables de entorno y secretos
+.env
+*.env
+
+# Datos masivos de Docker y bases PostgreSQL
+docker/data/
+*.pbf
+*.bin
+*.tar.gz
+
+# Archivos de R y RStudio
+.Rhistory
+.RData
+.Rproj.user/
+*.Rout
+
+# Salidas de datos de trabajo
+output/
+*.xlsx

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  nominatim-engine:
+    image: ${NOMINATIM_IMAGE:-mediagis/nominatim:4.4}
+    container_name: nominatim-cluster
+    restart: unless-stopped
+    ports:
+      - "${NOMINATIM_PORT:-8080}:8080"
+    environment:
+      # Insumo cartográfico descargado en el volumen local
+      - PBF_PATH=/nominatim/data/${PBF_FILENAME:-ecuador-latest.osm.pbf}
+      # Parámetros del motor PostgreSQL/PostGIS (inyectados desde .env)
+      - POSTGRES_SHARED_BUFFERS=${POSTGRES_SHARED_BUFFERS:-4GB}
+      - POSTGRES_MAINTENANCE_WORK_MEM=${POSTGRES_MAINTENANCE_WORK_MEM:-8GB}
+      - POSTGRES_WORK_MEM=${POSTGRES_WORK_MEM:-128MB}
+      - THREADS=${THREADS:-8}
+    volumes:
+      # Persistencia de tablas espaciales, índices GiST y archivo .osm.pbf
+      - ./data:/nominatim/data
+    # Asignación de memoria compartida (/dev/shm) para indexación de R-Trees espaciales
+    shm_size: 2gb
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -s http://localhost:8080/status || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
